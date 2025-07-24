@@ -26,16 +26,8 @@ for filename in os.listdir(docx_directory):
     if filename.endswith(".docx"):
         file_path = os.path.join(docx_directory, filename)
         raw_docx_elements.extend(partition_docx(filename=file_path,
-                                                # Unstructured first finds bounding boxes of elements in the document and then extracts the text within those boxes.
-                                                # In structured documents, tables and other elements are carefully positioned.
-                                                # You can use this parameter to ignore headers and footers.
                                                 infer_table_structure=True,
-                                                # --- CHUNKING STRATEGY ---
-                                                # https://unstructured-io.github.io/unstructured/core/chunking.html
-                                                chunking_strategy="by_title",
-                                                max_characters=4000,
-                                                new_after_n_chars=3800,
-                                                combine_text_under_n_chars=2000,
+                                                strategy="hi_res",
                                                ))
 
 # --- 2. CREATE A DICTIONARY TO STORE THE ELEMENTS ---
@@ -55,17 +47,31 @@ with open('elements.pkl', 'wb') as f:
     pickle.dump(elements_dict, f)
 
 # --- 4. CATEGORIZE ELEMENTS ---
+from unstructured.documents.elements import Table, CompositeElement
+
 tables = []
 texts = []
 for element in raw_docx_elements:
-    if "unstructured.documents.elements.Table" in str(type(element)):
+    if isinstance(element, Table):
         tables.append(str(element))
-    elif "unstructured.documents.elements.CompositeElement" in str(type(element)):
+    elif isinstance(element, CompositeElement):
         texts.append(str(element))
 
 # --- 5. ADD TO VECTOR DB ---
-vector_store = SupabaseVectorStore.from_texts(
-    texts,
+# Add texts to the vector store
+if texts:
+    vector_store = SupabaseVectorStore.from_texts(
+        texts,
+        embeddings,
+        client=supabase,
+        table_name="documents3",
+        query_name="match_documents3",
+    )
+
+# Add tables to the vector store
+if tables:
+    vector_store = SupabaseVectorStore.from_texts(
+        tables,
     embeddings,
     client=supabase,
     table_name="documents3",
