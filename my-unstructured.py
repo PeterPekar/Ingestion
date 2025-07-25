@@ -27,7 +27,9 @@ def extract_docx_elements(path, fname):
     fname: File name
     """
     return partition_docx(
-        filename=path + fname
+        filename=path + fname,
+        infer_table_structure=True,
+        strategy="hi_res",
     )
 
 # Categorize elements by type
@@ -58,7 +60,7 @@ texts, tables = categorize_elements(raw_pdf_elements)
 
 # Optional: Enforce a specific token size for texts
 text_splitter = CharacterTextSplitter.from_tiktoken_encoder(
-    chunk_size=4000, chunk_overlap=0
+    chunk_size=1000, chunk_overlap=10
 )
 joined_texts = " ".join(texts)
 texts_4k_token = text_splitter.split_text(joined_texts)
