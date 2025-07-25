@@ -1,5 +1,6 @@
 from langchain_text_splitters import CharacterTextSplitter
 from unstructured.partition.pdf import partition_pdf
+from unstructured.partition.docx import partition_docx
 
 # Extract elements from PDF
 def extract_pdf_elements(path, fname):
@@ -19,6 +20,15 @@ def extract_pdf_elements(path, fname):
         image_output_dir_path=path,
     )
 
+def extract_docx_elements(path, fname):
+    """
+    Extract images, tables, and chunk text from a PDF file.
+    path: File path, which is used to dump images (.jpg)
+    fname: File name
+    """
+    return partition_docx(
+        filename=path + fname
+    )
 
 # Categorize elements by type
 def categorize_elements(raw_pdf_elements):
@@ -31,17 +41,17 @@ def categorize_elements(raw_pdf_elements):
     for element in raw_pdf_elements:
         if "unstructured.documents.elements.Table" in str(type(element)):
             tables.append(str(element))
-        elif "unstructured.documents.elements.CompositeElement" in str(type(element)):
+        else :
             texts.append(str(element))
     return texts, tables
 
 
 # File path
 fpath = "documents/"
-fname = "sigmatek-test.pdf"
+fname = "LASAL Text_eng.docx"
 
 # Get elements
-raw_pdf_elements = extract_pdf_elements(fpath, fname)
+raw_pdf_elements = extract_docx_elements(fpath, fname)
 
 # Get text, tables
 texts, tables = categorize_elements(raw_pdf_elements)
@@ -98,3 +108,6 @@ def generate_text_summaries(texts, tables, summarize_texts=False):
 text_summaries, table_summaries = generate_text_summaries(
     texts_4k_token, tables, summarize_texts=True
 )
+
+# Print summaries
+print("Text Summaries:")

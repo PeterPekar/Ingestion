@@ -4,7 +4,6 @@ from unstructured.partition.docx import partition_docx
 from langchain_community.vectorstores import SupabaseVectorStore
 from langchain_openai import OpenAIEmbeddings
 from supabase.client import Client, create_client
-import pickle
 
 # Load environment variables
 load_dotenv()
@@ -42,9 +41,6 @@ for e in raw_docx_elements:
     # Add the element to the dictionary
     elements_dict[element_id] = {"text": text, "metadata": metadata}
 
-# --- 3. STORE THE ELEMENTS IN A PICKLE FILE ---
-with open('elements.pkl', 'wb') as f:
-    pickle.dump(elements_dict, f)
 
 # --- 4. CATEGORIZE ELEMENTS ---
 from unstructured.documents.elements import Table, CompositeElement
